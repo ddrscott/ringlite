@@ -4,7 +4,7 @@ const { exit } = window.__TAURI__.process;
 // Ring state
 const DEFAULT_SIZE = 400;
 const MIN_SIZE = 100;
-const MAX_SIZE = 1200;
+const MAX_SIZE = 1600;
 const SIZE_STEP = 20;
 const NUDGE_STEP = 10;
 const PADDING = 200; // Extra space for glow effect
