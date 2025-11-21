@@ -1,0 +1,162 @@
+const { getCurrentWindow } = window.__TAURI__.window;
+const { exit } = window.__TAURI__.process;
+
+// Ring state
+const DEFAULT_SIZE = 400;
+const MIN_SIZE = 100;
+const MAX_SIZE = 1200;
+const SIZE_STEP = 20;
+const NUDGE_STEP = 10;
+const PADDING = 200; // Extra space for glow effect
+
+let ringSize = loadSavedSize();
+let ringThickness = ringSize * 0.1;
+
+function loadSavedSize() {
+  const saved = localStorage.getItem('ringSize');
+  if (saved) {
+    const size = parseInt(saved, 10);
+    if (size >= MIN_SIZE && size <= MAX_SIZE) {
+      return size;
+    }
+  }
+  return DEFAULT_SIZE;
+}
+
+function saveSize() {
+  localStorage.setItem('ringSize', ringSize.toString());
+}
+
+// DOM elements
+let ring;
+let help;
+let appWindow;
+
+// Initialize on DOM load
+window.addEventListener("DOMContentLoaded", async () => {
+  ring = document.getElementById("ring");
+  help = document.getElementById("help");
+  appWindow = getCurrentWindow();
+
+  // Apply initial size
+  updateRingSize();
+  await updateWindowSize();
+
+  // Setup drag to move window
+  setupDrag();
+
+  // Setup keyboard controls
+  setupKeyboard();
+
+  // Setup scroll to resize
+  setupScroll();
+
+  // Hide help after 5 seconds
+  setTimeout(() => {
+    help.classList.add("hidden");
+  }, 5000);
+});
+
+function updateRingSize() {
+  document.documentElement.style.setProperty("--ring-size", `${ringSize}px`);
+  document.documentElement.style.setProperty("--ring-thickness", `${ringThickness}px`);
+}
+
+async function updateWindowSize() {
+  const windowSize = ringSize + PADDING;
+  try {
+    await appWindow.setSize({
+      type: "Logical",
+      width: windowSize,
+      height: windowSize
+    });
+  } catch (err) {
+    console.error("Failed to resize window:", err);
+  }
+}
+
+async function resize(delta) {
+  ringSize = Math.max(MIN_SIZE, Math.min(MAX_SIZE, ringSize + delta));
+  // Scale thickness with size (roughly 10% of diameter)
+  ringThickness = Math.max(10, Math.min(100, ringSize * 0.1));
+  updateRingSize();
+  await updateWindowSize();
+  saveSize();
+}
+
+// Drag to move window
+function setupDrag() {
+  ring.addEventListener("mousedown", async (e) => {
+    if (e.button === 0) {
+      await appWindow.startDragging();
+    }
+  });
+}
+
+// Scroll to resize
+function setupScroll() {
+  window.addEventListener("wheel", (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -SIZE_STEP : SIZE_STEP;
+    resize(delta);
+  }, { passive: false });
+}
+
+// Keyboard controls
+function setupKeyboard() {
+  window.addEventListener("keydown", async (e) => {
+    switch (e.key) {
+      case "Escape":
+        await exit(0);
+        break;
+
+      case "+":
+      case "=":
+        await resize(SIZE_STEP);
+        break;
+
+      case "-":
+      case "_":
+        await resize(-SIZE_STEP);
+        break;
+
+      case "h":
+      case "H":
+        help.classList.toggle("hidden");
+        break;
+
+      case "ArrowUp":
+        e.preventDefault();
+        await nudgeWindow(0, -NUDGE_STEP);
+        break;
+
+      case "ArrowDown":
+        e.preventDefault();
+        await nudgeWindow(0, NUDGE_STEP);
+        break;
+
+      case "ArrowLeft":
+        e.preventDefault();
+        await nudgeWindow(-NUDGE_STEP, 0);
+        break;
+
+      case "ArrowRight":
+        e.preventDefault();
+        await nudgeWindow(NUDGE_STEP, 0);
+        break;
+    }
+  });
+}
+
+async function nudgeWindow(dx, dy) {
+  try {
+    const pos = await appWindow.outerPosition();
+    await appWindow.setPosition({
+      type: "Physical",
+      x: pos.x + dx,
+      y: pos.y + dy
+    });
+  } catch (err) {
+    console.error("Failed to nudge window:", err);
+  }
+}
