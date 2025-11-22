@@ -1,5 +1,6 @@
 const { getCurrentWindow } = window.__TAURI__.window;
 const { exit } = window.__TAURI__.process;
+const { invoke } = window.__TAURI__.core;
 
 // Ring state
 const DEFAULT_SIZE = 400;
@@ -31,11 +32,13 @@ function saveSize() {
 let ring;
 let help;
 let appWindow;
+let licenseModal;
 
 // Initialize on DOM load
 window.addEventListener("DOMContentLoaded", async () => {
   ring = document.getElementById("ring");
   help = document.getElementById("help");
+  licenseModal = document.getElementById("license-modal");
   appWindow = getCurrentWindow();
 
   // Apply initial size
@@ -50,6 +53,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Setup scroll to resize
   setupScroll();
+
+  // Setup licensing
+  await setupLicensing();
 
   // Hide help after 5 seconds
   setTimeout(() => {
@@ -159,4 +165,71 @@ async function nudgeWindow(dx, dy) {
   } catch (err) {
     console.error("Failed to nudge window:", err);
   }
+}
+
+// Licensing
+async function setupLicensing() {
+  // Increment use count
+  const [isLicensed, useCount, maxFree] = await invoke("increment_use_count");
+
+  // Check if we should show nag
+  if (!isLicensed && useCount >= maxFree) {
+    showLicenseModal();
+  }
+
+  // Setup modal event handlers
+  const enterLicenseBtn = document.getElementById("enter-license-btn");
+  const activateBtn = document.getElementById("activate-btn");
+  const cancelLicenseBtn = document.getElementById("cancel-license-btn");
+  const closeNagBtn = document.getElementById("close-nag-btn");
+  const licenseInputSection = document.getElementById("license-input-section");
+  const licenseKeyInput = document.getElementById("license-key-input");
+  const licenseError = document.getElementById("license-error");
+  const modalActions = document.querySelector(".modal-actions");
+
+  enterLicenseBtn.addEventListener("click", () => {
+    modalActions.classList.add("hidden");
+    licenseInputSection.classList.remove("hidden");
+    licenseKeyInput.focus();
+  });
+
+  cancelLicenseBtn.addEventListener("click", () => {
+    modalActions.classList.remove("hidden");
+    licenseInputSection.classList.add("hidden");
+    licenseKeyInput.value = "";
+    licenseError.classList.add("hidden");
+  });
+
+  activateBtn.addEventListener("click", async () => {
+    const key = licenseKeyInput.value.trim();
+    if (!key) {
+      showLicenseError("Please enter a license key");
+      return;
+    }
+
+    try {
+      const email = await invoke("activate_license", { licenseKey: key });
+      hideLicenseModal();
+      console.log("License activated for:", email);
+    } catch (err) {
+      showLicenseError(err);
+    }
+  });
+
+  closeNagBtn.addEventListener("click", () => {
+    hideLicenseModal();
+  });
+
+  function showLicenseError(message) {
+    licenseError.textContent = message;
+    licenseError.classList.remove("hidden");
+  }
+}
+
+function showLicenseModal() {
+  licenseModal.classList.remove("hidden");
+}
+
+function hideLicenseModal() {
+  licenseModal.classList.add("hidden");
 }

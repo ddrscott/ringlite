@@ -1,5 +1,7 @@
 use tauri::Manager;
 
+mod licensing;
+
 #[cfg(target_os = "macos")]
 mod macos {
     use cocoa::appkit::NSWindow;
@@ -58,6 +60,12 @@ fn setup_capture_exclusion(app: &tauri::App) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_process::init())
+        .invoke_handler(tauri::generate_handler![
+            licensing::get_license_status,
+            licensing::increment_use_count,
+            licensing::activate_license,
+            licensing::should_show_nag,
+        ])
         .setup(|app| {
             setup_capture_exclusion(app);
             Ok(())

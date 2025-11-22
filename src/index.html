@@ -20,5 +20,24 @@
         <p><kbd>Esc</kbd> Quit</p>
       </div>
     </div>
+    <div id="license-modal" class="hidden">
+      <div class="modal-content">
+        <h2>Enjoying RingLite?</h2>
+        <p class="modal-subtitle">Your free trial has ended. Upgrade to Pro for unlimited use.</p>
+        <div class="modal-actions">
+          <a href="https://ringlite.ljs.app" target="_blank" class="btn-primary">Buy Pro - $7</a>
+          <button id="enter-license-btn" class="btn-secondary">Enter License Key</button>
+        </div>
+        <div id="license-input-section" class="hidden">
+          <textarea id="license-key-input" placeholder="Paste your license key here..."></textarea>
+          <div class="license-actions">
+            <button id="activate-btn" class="btn-primary">Activate</button>
+            <button id="cancel-license-btn" class="btn-secondary">Cancel</button>
+          </div>
+          <p id="license-error" class="error hidden"></p>
+        </div>
+        <button id="close-nag-btn" class="btn-dismiss">Continue with limitations</button>
+      </div>
+    </div>
   </body>
 </html>
