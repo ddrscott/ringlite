@@ -56,11 +56,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Setup licensing
   await setupLicensing();
-
-  // Hide help after 5 seconds
-  setTimeout(() => {
-    help.classList.add("hidden");
-  }, 5000);
 });
 
 function updateRingSize() {
