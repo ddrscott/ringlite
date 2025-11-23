@@ -18,8 +18,8 @@ export default function RootLayout({
         {children}
         <Script
           defer
-          data-domain="www.ringlite.app"
-          src="https://plausible.ljs.app/js/script.outbound-links.pageview-props.revenue.tagged-events.js"
+          data-domain="ringlite.app"
+          src="https://plausible.ljs.app/js/script.file-downloads.outbound-links.pageview-props.revenue.tagged-events.js"
           strategy="afterInteractive"
         />
       </body>
