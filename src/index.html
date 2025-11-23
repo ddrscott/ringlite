@@ -10,31 +10,32 @@
   <body>
     <div id="background-dim"></div>
     <div id="ring"></div>
-    <div id="help-hint">RingLite<small>H for Help</small></div>
-    <div id="help">
-      <button id="help-close" class="btn-icon" title="Close (H)">&times;</button>
-      <div class="help-content">
-        <div id="license-status" class="license-status"></div>
-        <h3>Controls</h3>
-        <p><kbd>Drag</kbd> Move ring</p>
-        <p><kbd>Scroll</kbd> Resize</p>
-        <p><kbd>+</kbd> / <kbd>-</kbd> Resize</p>
-        <p><kbd>Arrow keys</kbd> Nudge</p>
-        <p><kbd>H</kbd> Toggle help</p>
-        <p><kbd>L</kbd> Enter license</p>
-        <p><kbd>Esc</kbd> Quit</p>
-        <div class="dim-control">
-          <label for="dim-slider">Background Dim</label>
-          <input type="range" id="dim-slider" min="0" max="100" value="0">
-          <span id="dim-value">0%</span>
-        </div>
-        <div class="temp-control">
-          <label for="temp-slider">Temperature</label>
-          <input type="range" id="temp-slider" min="0" max="100" value="0">
-          <span id="temp-value">Cool</span>
-        </div>
-        <p class="tip">Tip: Turn up screen brightness and add dimming for a stronger effect.</p>
-        <button id="quit-btn" class="btn-quit">Quit</button>
+    <div id="brand">RINGLITE</div>
+    <div id="slider-left" class="ring-slider" title="Background dimming">
+      <span class="slider-icon">●</span>
+      <input type="range" id="dim-slider" min="0" max="100" value="0" orient="vertical">
+      <span class="slider-icon">○</span>
+    </div>
+    <div id="slider-right" class="ring-slider" title="Temperature (cool → warm)">
+      <span class="slider-icon">☽</span>
+      <input type="range" id="temp-slider" min="0" max="100" value="0" orient="vertical">
+      <span class="slider-icon">☀</span>
+    </div>
+    <div id="bottom-controls">
+      <button id="help-btn" class="control-btn" title="Help (H)">?</button>
+      <button id="quit-btn" class="control-btn" title="Quit (Esc)">⏻</button>
+    </div>
+    <div id="help" class="hidden">
+      <div id="license-status" class="license-status"></div>
+      <p><kbd>Drag</kbd> Move</p>
+      <p><kbd>Scroll</kbd> Resize</p>
+      <p><kbd>+/-</kbd> Resize</p>
+      <p><kbd>Arrows</kbd> Nudge</p>
+      <p id="license-help-item"><kbd>L</kbd> License</p>
+      <div class="help-links">
+        <a href="https://ringlite.ljs.app/privacy" target="_blank">Privacy</a>
+        <span>·</span>
+        <a href="https://ringlite.ljs.app/terms" target="_blank">Terms</a>
       </div>
     </div>
     <div id="license-modal" class="hidden">

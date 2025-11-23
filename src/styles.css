@@ -44,96 +44,113 @@ html, body {
   cursor: grabbing;
 }
 
-#help-hint {
+/* Brand on the ring at 12 o'clock */
+#brand {
   position: absolute;
   left: 0;
   top: 0;
-  color: black;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 8px 14px;
-  border-radius: 6px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 18px;
+  font-size: var(--brand-font-size, 11px);
   font-weight: 600;
+  letter-spacing: 2px;
+  color: rgba(0, 0, 0, 0.6);
   pointer-events: none;
-  z-index: 999;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-  white-space: nowrap;
-  text-align: center;
+  z-index: 1001;
+}
+
+/* Vertical sliders at 9 and 3 o'clock */
+.ring-slider {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
-#help-hint small {
-  font-size: 11px;
-  font-weight: 400;
-  opacity: 0.7;
+.slider-icon {
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.5);
 }
 
-#help-hint.hidden {
-  opacity: 0;
+.ring-slider input[type="range"] {
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  width: 20px;
+  height: 50px;
+  background: transparent;
+  cursor: pointer;
 }
 
-/* Help overlay */
-#help {
+.ring-slider input[type="range"]::-webkit-slider-runnable-track {
+  width: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+}
+
+.ring-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: rgba(60, 60, 60, 0.9);
+  border-radius: 50%;
+  cursor: pointer;
+  margin-left: -5px;
+}
+
+/* Bottom controls at 6 o'clock */
+#bottom-controls {
   position: absolute;
   left: 0;
   top: 0;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 15px 20px;
-  border-radius: 10px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
   z-index: 1000;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-  cursor: grab;
 }
 
-#help-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-}
-
-.btn-icon {
-  background: transparent;
+.control-btn {
+  background: rgba(60, 60, 60, 0.9);
   border: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
   width: 24px;
   height: 24px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: 50%;
+  transition: all 0.15s ease;
 }
 
-.btn-icon:hover {
+.control-btn:hover {
+  background: rgba(80, 80, 80, 0.95);
+  color: #fff;
+}
+
+#quit-btn:hover {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+}
+
+/* Help tooltip - minimal */
+#help {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: rgba(0, 0, 0, 0.9);
   color: white;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.btn-quit {
-  margin-top: 12px;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.btn-quit:hover {
-  background: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  z-index: 1001;
+  opacity: 1;
+  transition: opacity 0.2s ease;
 }
 
 #help.hidden {
@@ -141,103 +158,58 @@ html, body {
   pointer-events: none;
 }
 
-.license-status {
-  margin-bottom: 10px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  text-align: center;
+.help-links {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.license-status.trial {
-  background: rgba(251, 191, 36, 0.2);
-  color: #fbbf24;
+.help-links a {
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
 }
 
-.license-status.pro {
-  background: rgba(74, 222, 128, 0.2);
-  color: #4ade80;
-}
-
-#help h3 {
-  margin-bottom: 10px;
-  font-size: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  padding-bottom: 5px;
+.help-links a:hover {
+  color: white;
 }
 
 #help p {
-  margin: 5px 0;
+  margin: 4px 0;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 #help kbd {
   background: rgba(255, 255, 255, 0.15);
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
   font-family: inherit;
-  min-width: 60px;
+  font-size: 10px;
+  min-width: 50px;
   text-align: center;
 }
 
-.dim-control,
-.temp-control {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* License status in help tooltip */
+#help .license-status {
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  text-align: center;
 }
 
-.temp-control {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: none;
+#help .license-status.trial {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
 }
 
-.dim-control label,
-.temp-control label {
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.dim-control input[type="range"],
-.temp-control input[type="range"] {
-  flex: 1;
-  height: 4px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px;
-  cursor: pointer;
-}
-
-.dim-control input[type="range"]::-webkit-slider-thumb,
-.temp-control input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  background: white;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.dim-control #dim-value,
-.temp-control #temp-value {
-  font-size: 12px;
-  min-width: 30px;
-  text-align: right;
-}
-
-#help .tip {
-  margin-top: 10px;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-  font-style: italic;
+#help .license-status.pro {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
 }
 
 /* License modal */

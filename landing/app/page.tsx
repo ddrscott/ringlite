@@ -181,8 +181,12 @@ export default function Home() {
       {/* Footer */}
       <footer className="container mx-auto px-6 py-12 text-center text-gray-600 text-sm">
         <p>Made by <a href="https://github.com/ddrscott" className="text-gray-400 hover:text-white">@ddrscott</a></p>
-        <p className="mt-2">
+        <p className="mt-2 space-x-4">
           <a href="https://github.com/ddrscott/ringlite" className="hover:text-white">GitHub</a>
+          <span>·</span>
+          <a href="/privacy" className="hover:text-white">Privacy</a>
+          <span>·</span>
+          <a href="/terms" className="hover:text-white">Terms</a>
         </p>
       </footer>
     </main>

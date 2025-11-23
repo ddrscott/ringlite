@@ -63,16 +63,22 @@ function saveTemp(value) {
 
 // DOM elements
 let ring;
+let brand;
+let sliderLeft;
+let sliderRight;
+let bottomControls;
 let help;
-let helpHint;
 let appWindow;
 let licenseModal;
 
 // Initialize on DOM load
 window.addEventListener("DOMContentLoaded", async () => {
   ring = document.getElementById("ring");
+  brand = document.getElementById("brand");
+  sliderLeft = document.getElementById("slider-left");
+  sliderRight = document.getElementById("slider-right");
+  bottomControls = document.getElementById("bottom-controls");
   help = document.getElementById("help");
-  helpHint = document.getElementById("help-hint");
   licenseModal = document.getElementById("license-modal");
   appWindow = getCurrentWindow();
 
@@ -116,27 +122,56 @@ window.addEventListener("DOMContentLoaded", async () => {
 function updateRingSize() {
   document.documentElement.style.setProperty("--ring-size", `${ringSize}px`);
   document.documentElement.style.setProperty("--ring-thickness", `${ringThickness}px`);
+  document.documentElement.style.setProperty("--brand-font-size", `${Math.max(8, ringSize * 0.03)}px`);
 }
 
 function updateRingPosition() {
   // Simple 2D transform - avoid 3D transforms which can cause compositor artifacts on transparent windows
   ring.style.transform = `translate(${ringX - ringSize/2}px, ${ringY - ringSize/2}px)`;
-  updateHintPosition();
+  updateBrandPosition();
+  updateSliderPositions();
+  updateBottomControlsPosition();
   updateHelpPosition();
 }
 
-function updateHintPosition() {
-  if (!helpHint) return;
-  // Position at 6 o'clock (bottom center of ring, inside the ring)
-  const hintX = ringX;
-  const hintY = ringY + ringSize/2 - ringThickness/2 - 24;
-  helpHint.style.transform = `translate(${hintX}px, ${hintY}px) translateX(-50%)`;
+function updateBrandPosition() {
+  if (!brand) return;
+  // Position ON the ring at 12 o'clock (on the glowing part)
+  const brandX = ringX;
+  const brandY = ringY - ringSize/2 + ringThickness/2;
+  brand.style.transform = `translate(${brandX}px, ${brandY}px) translate(-50%, -50%)`;
+}
+
+function updateSliderPositions() {
+  // Left slider at 9 o'clock (on the ring)
+  if (sliderLeft) {
+    const leftX = ringX - ringSize/2 + ringThickness/2;
+    const leftY = ringY;
+    sliderLeft.style.transform = `translate(${leftX}px, ${leftY}px) translate(-50%, -50%)`;
+  }
+
+  // Right slider at 3 o'clock (on the ring)
+  if (sliderRight) {
+    const rightX = ringX + ringSize/2 - ringThickness/2;
+    const rightY = ringY;
+    sliderRight.style.transform = `translate(${rightX}px, ${rightY}px) translate(-50%, -50%)`;
+  }
+}
+
+function updateBottomControlsPosition() {
+  if (!bottomControls) return;
+  // Position at 6 o'clock (on the ring)
+  const controlsX = ringX;
+  const controlsY = ringY + ringSize/2 - ringThickness/2;
+  bottomControls.style.transform = `translate(${controlsX}px, ${controlsY}px) translate(-50%, -50%)`;
 }
 
 function updateHelpPosition() {
   if (!help) return;
-  // Center help menu on ring position
-  help.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+  // Position inside the ring, near the bottom
+  const helpX = ringX;
+  const helpY = ringY + ringSize/2 - ringThickness - 60;
+  help.style.transform = `translate(${helpX}px, ${helpY}px) translate(-50%, -50%)`;
 }
 
 // Click-through: ignore clicks on transparent areas, capture on ring
@@ -153,7 +188,7 @@ async function setupClickThrough() {
 
       // Check UI elements at cursor position
       const elemAtPoint = document.elementFromPoint(x, y);
-      const isOverUI = elemAtPoint && (elemAtPoint.closest('#help') || elemAtPoint.closest('#license-modal'));
+      const isOverUI = elemAtPoint && (elemAtPoint.closest('.ring-slider') || elemAtPoint.closest('#bottom-controls') || elemAtPoint.closest('#help') || elemAtPoint.closest('#license-modal'));
 
       const shouldCapture = isOverRing || isOverUI;
 
@@ -215,7 +250,6 @@ function setupDrag() {
   }
 
   ring.addEventListener("mousedown", startDrag);
-  help.addEventListener("mousedown", startDrag);
 
   window.addEventListener("mousemove", (e) => {
     if (isDragging) {
@@ -248,19 +282,16 @@ function setupScroll() {
 // Background dim control
 function setupDimControl() {
   const slider = document.getElementById("dim-slider");
-  const valueDisplay = document.getElementById("dim-value");
 
   // Load saved value
   const savedDim = loadSavedDim();
   slider.value = savedDim;
   updateDimOpacity(savedDim);
-  valueDisplay.textContent = `${savedDim}%`;
 
   // Handle slider changes
   slider.addEventListener("input", (e) => {
     const value = parseInt(e.target.value, 10);
     updateDimOpacity(value);
-    valueDisplay.textContent = `${value}%`;
     saveDim(value);
   });
 }
@@ -272,27 +303,18 @@ function updateDimOpacity(percent) {
 // Temperature control (cool white to warm yellow)
 function setupTempControl() {
   const slider = document.getElementById("temp-slider");
-  const valueDisplay = document.getElementById("temp-value");
 
   // Load saved value
   const savedTemp = loadSavedTemp();
   slider.value = savedTemp;
   updateColorTemp(savedTemp);
-  valueDisplay.textContent = getTempLabel(savedTemp);
 
   // Handle slider changes
   slider.addEventListener("input", (e) => {
     const value = parseInt(e.target.value, 10);
     updateColorTemp(value);
-    valueDisplay.textContent = getTempLabel(value);
     saveTemp(value);
   });
-}
-
-function getTempLabel(value) {
-  if (value < 33) return "Cool";
-  if (value < 66) return "Neutral";
-  return "Warm";
 }
 
 function updateColorTemp(percent) {
@@ -307,11 +329,10 @@ function updateColorTemp(percent) {
   document.documentElement.style.setProperty("--ring-glow", `rgba(${r}, ${g}, ${b}, 0.6)`);
 }
 
-// Help and quit buttons
+// Control buttons
 function setupHelpButtons() {
-  document.getElementById("help-close").addEventListener("click", () => {
-    help.classList.add("hidden");
-    helpHint.classList.remove("hidden");
+  document.getElementById("help-btn").addEventListener("click", () => {
+    help.classList.toggle("hidden");
   });
 
   document.getElementById("quit-btn").addEventListener("click", () => {
@@ -340,8 +361,6 @@ function setupKeyboard() {
       case "h":
       case "H":
         help.classList.toggle("hidden");
-        // Show hint when help is hidden, hide hint when help is shown
-        helpHint.classList.toggle("hidden", !help.classList.contains("hidden"));
         break;
 
       case "l":
@@ -451,12 +470,16 @@ function hideLicenseModal() {
 
 function updateLicenseStatus(isLicensed, useCount, maxFree) {
   const statusEl = document.getElementById("license-status");
+  const licenseHelpItem = document.getElementById("license-help-item");
+
   if (isLicensed) {
-    statusEl.textContent = "Pro License Active";
+    statusEl.textContent = "Thank you, Pro!";
     statusEl.className = "license-status pro";
+    if (licenseHelpItem) licenseHelpItem.style.display = "none";
   } else {
     const remaining = Math.max(0, maxFree - useCount);
     statusEl.textContent = `${remaining} free uses remaining`;
     statusEl.className = "license-status trial";
+    if (licenseHelpItem) licenseHelpItem.style.display = "";
   }
 }
