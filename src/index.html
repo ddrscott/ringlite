@@ -8,6 +8,7 @@
     <script type="module" src="/main.js" defer></script>
   </head>
   <body>
+    <div id="background-dim"></div>
     <div id="ring"></div>
     <div id="help">
       <div class="help-content">
@@ -20,6 +21,12 @@
         <p><kbd>H</kbd> Toggle help</p>
         <p><kbd>L</kbd> Enter license</p>
         <p><kbd>Esc</kbd> Quit</p>
+        <div class="dim-control">
+          <label for="dim-slider">Background Dim</label>
+          <input type="range" id="dim-slider" min="0" max="100" value="0">
+          <span id="dim-value">0%</span>
+        </div>
+        <p class="tip">Tip: Turn up screen brightness and add dimming for a stronger effect.</p>
       </div>
     </div>
     <div id="license-modal" class="hidden">

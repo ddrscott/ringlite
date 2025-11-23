@@ -43,6 +43,15 @@ function savePosition() {
   localStorage.setItem('ringY', ringY.toString());
 }
 
+function loadSavedDim() {
+  const saved = localStorage.getItem('dimOpacity');
+  return saved ? parseInt(saved, 10) : 0;
+}
+
+function saveDim(value) {
+  localStorage.setItem('dimOpacity', value.toString());
+}
+
 // DOM elements
 let ring;
 let help;
@@ -79,6 +88,9 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // Setup scroll to resize
   setupScroll();
+
+  // Setup background dim slider
+  setupDimControl();
 
   // Setup licensing
   await setupLicensing();
@@ -141,7 +153,6 @@ function isPointOverRing(x, y) {
   return distance <= outerRadius + glowPadding && distance >= innerRadius - glowPadding;
 }
 
-
 function resize(delta) {
   ringSize = Math.max(MIN_SIZE, Math.min(MAX_SIZE, ringSize + delta));
   ringThickness = Math.max(10, Math.min(100, ringSize * 0.1));
@@ -193,6 +204,30 @@ function setupScroll() {
     const delta = e.deltaY > 0 ? -SIZE_STEP : SIZE_STEP;
     resize(delta);
   }, { passive: false });
+}
+
+// Background dim control
+function setupDimControl() {
+  const slider = document.getElementById("dim-slider");
+  const valueDisplay = document.getElementById("dim-value");
+
+  // Load saved value
+  const savedDim = loadSavedDim();
+  slider.value = savedDim;
+  updateDimOpacity(savedDim);
+  valueDisplay.textContent = `${savedDim}%`;
+
+  // Handle slider changes
+  slider.addEventListener("input", (e) => {
+    const value = parseInt(e.target.value, 10);
+    updateDimOpacity(value);
+    valueDisplay.textContent = `${value}%`;
+    saveDim(value);
+  });
+}
+
+function updateDimOpacity(percent) {
+  document.documentElement.style.setProperty("--dim-opacity", percent / 100);
 }
 
 // Keyboard controls
@@ -297,10 +332,9 @@ async function setupLicensing() {
     }
 
     try {
-      const email = await invoke("activate_license", { licenseKey: key });
+      await invoke("activate_license", { licenseKey: key });
       hideLicenseModal();
       updateLicenseStatus(true, 0, 10);
-      console.log("License activated for:", email);
     } catch (err) {
       showLicenseError(err);
     }

@@ -13,6 +13,15 @@ html, body {
   -webkit-user-select: none;
 }
 
+#background-dim {
+  position: fixed;
+  inset: 0;
+  background: black;
+  opacity: var(--dim-opacity, 0);
+  pointer-events: none;
+  z-index: -1;
+}
+
 #ring {
   position: absolute;
   left: 0;
@@ -30,7 +39,6 @@ html, body {
     inset 0 0 20px rgba(255, 255, 255, 0.6),
     inset 0 0 40px rgba(255, 255, 255, 0.4);
 }
-
 
 #ring:active {
   cursor: grabbing;
@@ -97,6 +105,53 @@ html, body {
   font-family: inherit;
   min-width: 60px;
   text-align: center;
+}
+
+.dim-control {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dim-control label {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.dim-control input[type="range"] {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.dim-control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.dim-control #dim-value {
+  font-size: 12px;
+  min-width: 30px;
+  text-align: right;
+}
+
+#help .tip {
+  margin-top: 10px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
 }
 
 /* License modal */

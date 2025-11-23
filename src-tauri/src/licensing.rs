@@ -7,7 +7,7 @@ use std::path::PathBuf;
 // Public key for license verification (safe to embed in app)
 // Generate keypair with: node -e "const c=require('crypto');const k=c.generateKeyPairSync('ed25519');console.log('PRIVATE:',k.privateKey.export({type:'pkcs8',format:'pem'}));console.log('PUBLIC:',k.publicKey.export({type:'spki',format:'pem'}))"
 const PUBLIC_KEY_PEM: &str = r#"-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEA__REPLACE_WITH_YOUR_PUBLIC_KEY__
+MCowBQYDK2VwAyEA/zB2hOm8CL03USj+vw87fZYf/UOuVy45cQr/MZ6DWnw=
 -----END PUBLIC KEY-----"#;
 
 const MAX_FREE_USES: u32 = 10;
