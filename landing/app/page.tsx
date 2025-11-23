@@ -22,15 +22,6 @@ export default function Home() {
           Download Free (macOS)
         </a>
         <p className="text-gray-600 text-sm mt-2">10 free uses, then $7 for unlimited</p>
-
-        <figure className="mt-12 max-w-2xl mx-auto">
-          <img
-            src="/screenshot.jpg"
-            alt="RingLite in action during a video call"
-            className="rounded-xl shadow-2xl"
-          />
-          <figcaption className="text-gray-500 text-sm mt-3">RingLite in the wild</figcaption>
-        </figure>
       </section>
 
       {/* Features */}
@@ -139,6 +130,17 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="container mx-auto px-6 py-16">
+        <h2 className="text-2xl font-bold text-center mb-8">Caught In the Wild</h2>
+        <figure className="mt-12 max-w-2xl mx-auto">
+          <img
+            src="/screenshot.jpg"
+            alt="RingLite in action during a video call"
+            className="rounded-xl shadow-2xl"
+          />
+        </figure>
+      </section>
+
       {/* Comparison */}
       <section className="container mx-auto px-6 py-16">
         <h2 className="text-2xl font-bold text-center mb-8">Why Software Beats Hardware</h2>
@@ -185,6 +187,15 @@ export default function Home() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="container mx-auto px-6 py-16 text-center">
+        <a
+          href={DOWNLOAD_URL}
+          className="inline-block bg-yellow-500 hover:bg-yellow-400 text-black font-semibold px-8 py-3 rounded-lg transition"
+        >
+          Download Free (macOS)
+        </a>
       </section>
 
       {/* Footer */}
