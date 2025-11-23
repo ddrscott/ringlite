@@ -1,4 +1,4 @@
-const DOWNLOAD_URL = process.env.NEXT_PUBLIC_DOWNLOAD_URL || '/RingLite_1.0.0_aarch64.dmg'
+const DOWNLOAD_URL = process.env.NEXT_PUBLIC_DOWNLOAD_URL || '/RingLite_1.2.0_aarch64.dmg'
 
 export default function Home() {
   return (
