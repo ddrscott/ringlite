@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       const licenseKey = generateLicenseKey(email)
 
       await transporter.sendMail({
-        from: process.env.SMTP_FROM || 'RingLite <noreply@ljs.app>',
+        from: process.env.SMTP_FROM || 'RingLite <noreply@ringlite.app>',
         to: email,
         subject: 'Your RingLite Pro License Key',
         html: `
