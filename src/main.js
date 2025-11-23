@@ -191,22 +191,28 @@ function resize(delta) {
   saveSize();
 }
 
-// Drag to move ring element
+// Drag to move ring element (from ring or help card)
 function setupDrag() {
   let isDragging = false;
   let startMouseX, startMouseY;
   let startRingX, startRingY;
 
-  ring.addEventListener("mousedown", (e) => {
+  function startDrag(e) {
+    // Don't start drag on interactive elements
+    if (e.target.closest('input, button, a, textarea')) return;
+
     if (e.button === 0) {
       isDragging = true;
       startMouseX = e.clientX;
       startMouseY = e.clientY;
       startRingX = ringX;
       startRingY = ringY;
-      ring.style.cursor = "grabbing";
+      document.body.style.cursor = "grabbing";
     }
-  });
+  }
+
+  ring.addEventListener("mousedown", startDrag);
+  help.addEventListener("mousedown", startDrag);
 
   window.addEventListener("mousemove", (e) => {
     if (isDragging) {
@@ -221,7 +227,7 @@ function setupDrag() {
   window.addEventListener("mouseup", () => {
     if (isDragging) {
       isDragging = false;
-      ring.style.cursor = "grab";
+      document.body.style.cursor = "";
       savePosition();
     }
   });
