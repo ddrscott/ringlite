@@ -86,7 +86,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 function updateRingSize() {
   document.documentElement.style.setProperty("--ring-size", `${ringSize}px`);
-  // ringThickness is kept for hit detection but SVG stroke-width scales automatically
+  document.documentElement.style.setProperty("--ring-thickness", `${ringThickness}px`);
 }
 
 function updateRingPosition() {
