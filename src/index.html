@@ -8,15 +8,30 @@
     <script type="module" src="/main.js" defer></script>
   </head>
   <body>
-    <div id="ring"></div>
+    <svg id="ring" viewBox="0 0 100 100">
+      <defs>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur1"/>
+          <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur2"/>
+          <feMerge>
+            <feMergeNode in="blur2"/>
+            <feMergeNode in="blur1"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <circle cx="50" cy="50" r="45" fill="none" stroke="white" stroke-width="10" filter="url(#glow)"/>
+    </svg>
     <div id="help">
       <div class="help-content">
+        <div id="license-status" class="license-status"></div>
         <h3>Controls</h3>
         <p><kbd>Drag</kbd> Move ring</p>
         <p><kbd>Scroll</kbd> Resize</p>
         <p><kbd>+</kbd> / <kbd>-</kbd> Resize</p>
         <p><kbd>Arrow keys</kbd> Nudge</p>
         <p><kbd>H</kbd> Toggle help</p>
+        <p><kbd>L</kbd> Enter license</p>
         <p><kbd>Esc</kbd> Quit</p>
       </div>
     </div>

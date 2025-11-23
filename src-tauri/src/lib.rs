@@ -4,9 +4,8 @@ mod licensing;
 
 #[cfg(target_os = "macos")]
 mod macos {
-    use cocoa::appkit::NSWindow;
-    use cocoa::base::id;
-    use objc::{msg_send, sel, sel_impl};
+    use cocoa::base::{id, NO};
+    use objc::{msg_send, sel, sel_impl, class};
 
     // NSWindowSharingType enum values
     const NS_WINDOW_SHARING_NONE: u64 = 0;
@@ -14,6 +13,26 @@ mod macos {
     pub fn exclude_from_capture(ns_window: id) {
         unsafe {
             let _: () = msg_send![ns_window, setSharingType: NS_WINDOW_SHARING_NONE];
+        }
+    }
+
+    pub fn disable_window_shadow(ns_window: id) {
+        unsafe {
+            let _: () = msg_send![ns_window, setHasShadow: NO];
+        }
+    }
+
+    pub fn get_global_mouse_position() -> (f64, f64) {
+        unsafe {
+            let ns_event = class!(NSEvent);
+            let mouse_location: cocoa::foundation::NSPoint = msg_send![ns_event, mouseLocation];
+            // NSEvent mouseLocation returns screen coordinates with origin at bottom-left
+            // We need to flip Y to get top-left origin
+            let screens: id = msg_send![class!(NSScreen), screens];
+            let main_screen: id = msg_send![screens, objectAtIndex: 0_usize];
+            let frame: cocoa::foundation::NSRect = msg_send![main_screen, frame];
+            let screen_height = frame.size.height;
+            (mouse_location.x, screen_height - mouse_location.y)
         }
     }
 }
@@ -30,6 +49,18 @@ mod windows_impl {
     }
 }
 
+#[tauri::command]
+fn get_cursor_position() -> (f64, f64) {
+    #[cfg(target_os = "macos")]
+    {
+        macos::get_global_mouse_position()
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        (0.0, 0.0) // TODO: implement for other platforms
+    }
+}
+
 fn setup_capture_exclusion(app: &tauri::App) {
     let window = app.get_webview_window("main").expect("Failed to get main window");
 
@@ -37,8 +68,9 @@ fn setup_capture_exclusion(app: &tauri::App) {
     {
         use cocoa::base::id;
         if let Ok(ns_window) = window.ns_window() {
-            macos::exclude_from_capture(ns_window as id);
-            println!("macOS: Window excluded from screen capture");
+            let ns_window = ns_window as id;
+            macos::exclude_from_capture(ns_window);
+            macos::disable_window_shadow(ns_window);
         }
     }
 
@@ -46,7 +78,6 @@ fn setup_capture_exclusion(app: &tauri::App) {
     {
         if let Ok(hwnd) = window.hwnd() {
             windows_impl::exclude_from_capture(hwnd.0 as isize);
-            println!("Windows: Window excluded from screen capture");
         }
     }
 
@@ -65,6 +96,7 @@ pub fn run() {
             licensing::increment_use_count,
             licensing::activate_license,
             licensing::should_show_nag,
+            get_cursor_position,
         ])
         .setup(|app| {
             setup_capture_exclusion(app);

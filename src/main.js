@@ -8,10 +8,11 @@ const MIN_SIZE = 100;
 const MAX_SIZE = 1600;
 const SIZE_STEP = 20;
 const NUDGE_STEP = 10;
-const PADDING = 200; // Extra space for glow effect
 
 let ringSize = loadSavedSize();
 let ringThickness = ringSize * 0.1;
+let ringX = loadSavedPosition().x;
+let ringY = loadSavedPosition().y;
 
 function loadSavedSize() {
   const saved = localStorage.getItem('ringSize');
@@ -24,8 +25,22 @@ function loadSavedSize() {
   return DEFAULT_SIZE;
 }
 
+function loadSavedPosition() {
+  const savedX = localStorage.getItem('ringX');
+  const savedY = localStorage.getItem('ringY');
+  return {
+    x: savedX ? parseInt(savedX, 10) : window.innerWidth / 2,
+    y: savedY ? parseInt(savedY, 10) : window.innerHeight / 2
+  };
+}
+
 function saveSize() {
   localStorage.setItem('ringSize', ringSize.toString());
+}
+
+function savePosition() {
+  localStorage.setItem('ringX', ringX.toString());
+  localStorage.setItem('ringY', ringY.toString());
 }
 
 // DOM elements
@@ -41,11 +56,22 @@ window.addEventListener("DOMContentLoaded", async () => {
   licenseModal = document.getElementById("license-modal");
   appWindow = getCurrentWindow();
 
-  // Apply initial size
-  updateRingSize();
-  await updateWindowSize();
+  // Set window to fill screen (not fullscreen mode, just sized to screen)
+  await appWindow.setSize({
+    type: "Logical",
+    width: window.screen.width,
+    height: window.screen.height
+  });
+  await appWindow.setPosition({ type: "Logical", x: 0, y: 0 });
 
-  // Setup drag to move window
+  // Apply initial size and position
+  updateRingSize();
+  updateRingPosition();
+
+  // Setup click-through for non-ring areas
+  setupClickThrough();
+
+  // Setup drag to move ring
   setupDrag();
 
   // Setup keyboard controls
@@ -60,36 +86,102 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 function updateRingSize() {
   document.documentElement.style.setProperty("--ring-size", `${ringSize}px`);
-  document.documentElement.style.setProperty("--ring-thickness", `${ringThickness}px`);
+  // ringThickness is kept for hit detection but SVG stroke-width scales automatically
 }
 
-async function updateWindowSize() {
-  const windowSize = ringSize + PADDING;
-  try {
-    await appWindow.setSize({
-      type: "Logical",
-      width: windowSize,
-      height: windowSize
-    });
-  } catch (err) {
-    console.error("Failed to resize window:", err);
-  }
+function updateRingPosition() {
+  // Simple 2D transform - avoid 3D transforms which can cause compositor artifacts on transparent windows
+  ring.style.transform = `translate(${ringX - ringSize/2}px, ${ringY - ringSize/2}px)`;
 }
 
-async function resize(delta) {
+// Click-through: ignore clicks on transparent areas, capture on ring
+async function setupClickThrough() {
+  let isIgnoring = true;
+  appWindow.setIgnoreCursorEvents(true);
+
+  // Poll global cursor position to toggle click-through
+  // Uses native API that works even when window is ignoring events
+  setInterval(async () => {
+    try {
+      const [x, y] = await invoke("get_cursor_position");
+      const isOverRing = isPointOverRing(x, y);
+
+      // Check UI elements at cursor position
+      const elemAtPoint = document.elementFromPoint(x, y);
+      const isOverUI = elemAtPoint && (elemAtPoint.closest('#help') || elemAtPoint.closest('#license-modal'));
+
+      const shouldCapture = isOverRing || isOverUI;
+
+      if (shouldCapture && isIgnoring) {
+        appWindow.setIgnoreCursorEvents(false);
+        isIgnoring = false;
+      } else if (!shouldCapture && !isIgnoring) {
+        appWindow.setIgnoreCursorEvents(true);
+        isIgnoring = true;
+      }
+    } catch (err) {
+      // Cursor position fetch failed
+    }
+  }, 16); // ~60fps polling
+}
+
+function isPointOverRing(x, y) {
+  // Ring center is at (ringX, ringY)
+  const dx = x - ringX;
+  const dy = y - ringY;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  // Ring is a donut shape: outer radius - inner radius
+  const outerRadius = ringSize / 2;
+  const innerRadius = outerRadius - ringThickness;
+
+  // Add some padding for the glow
+  const glowPadding = 30;
+
+  return distance <= outerRadius + glowPadding && distance >= innerRadius - glowPadding;
+}
+
+
+function resize(delta) {
   ringSize = Math.max(MIN_SIZE, Math.min(MAX_SIZE, ringSize + delta));
-  // Scale thickness with size (roughly 10% of diameter)
   ringThickness = Math.max(10, Math.min(100, ringSize * 0.1));
   updateRingSize();
-  await updateWindowSize();
+  updateRingPosition(); // Re-center after resize
   saveSize();
 }
 
-// Drag to move window
+// Drag to move ring element
 function setupDrag() {
-  ring.addEventListener("mousedown", async (e) => {
+  let isDragging = false;
+  let startMouseX, startMouseY;
+  let startRingX, startRingY;
+
+  ring.addEventListener("mousedown", (e) => {
     if (e.button === 0) {
-      await appWindow.startDragging();
+      isDragging = true;
+      startMouseX = e.clientX;
+      startMouseY = e.clientY;
+      startRingX = ringX;
+      startRingY = ringY;
+      ring.style.cursor = "grabbing";
+    }
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+      const dx = e.clientX - startMouseX;
+      const dy = e.clientY - startMouseY;
+      ringX = startRingX + dx;
+      ringY = startRingY + dy;
+      updateRingPosition();
+    }
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (isDragging) {
+      isDragging = false;
+      ring.style.cursor = "grab";
+      savePosition();
     }
   });
 }
@@ -105,20 +197,20 @@ function setupScroll() {
 
 // Keyboard controls
 function setupKeyboard() {
-  window.addEventListener("keydown", async (e) => {
+  window.addEventListener("keydown", (e) => {
     switch (e.key) {
       case "Escape":
-        await exit(0);
+        exit(0);
         break;
 
       case "+":
       case "=":
-        await resize(SIZE_STEP);
+        resize(SIZE_STEP);
         break;
 
       case "-":
       case "_":
-        await resize(-SIZE_STEP);
+        resize(-SIZE_STEP);
         break;
 
       case "h":
@@ -126,46 +218,48 @@ function setupKeyboard() {
         help.classList.toggle("hidden");
         break;
 
+      case "l":
+      case "L":
+        showLicenseModal();
+        break;
+
       case "ArrowUp":
         e.preventDefault();
-        await nudgeWindow(0, -NUDGE_STEP);
+        nudgeRing(0, -NUDGE_STEP);
         break;
 
       case "ArrowDown":
         e.preventDefault();
-        await nudgeWindow(0, NUDGE_STEP);
+        nudgeRing(0, NUDGE_STEP);
         break;
 
       case "ArrowLeft":
         e.preventDefault();
-        await nudgeWindow(-NUDGE_STEP, 0);
+        nudgeRing(-NUDGE_STEP, 0);
         break;
 
       case "ArrowRight":
         e.preventDefault();
-        await nudgeWindow(NUDGE_STEP, 0);
+        nudgeRing(NUDGE_STEP, 0);
         break;
     }
   });
 }
 
-async function nudgeWindow(dx, dy) {
-  try {
-    const pos = await appWindow.outerPosition();
-    await appWindow.setPosition({
-      type: "Physical",
-      x: pos.x + dx,
-      y: pos.y + dy
-    });
-  } catch (err) {
-    console.error("Failed to nudge window:", err);
-  }
+function nudgeRing(dx, dy) {
+  ringX += dx;
+  ringY += dy;
+  updateRingPosition();
+  savePosition();
 }
 
 // Licensing
 async function setupLicensing() {
   // Increment use count
   const [isLicensed, useCount, maxFree] = await invoke("increment_use_count");
+
+  // Update status display
+  updateLicenseStatus(isLicensed, useCount, maxFree);
 
   // Check if we should show nag
   if (!isLicensed && useCount >= maxFree) {
@@ -205,6 +299,7 @@ async function setupLicensing() {
     try {
       const email = await invoke("activate_license", { licenseKey: key });
       hideLicenseModal();
+      updateLicenseStatus(true, 0, 10);
       console.log("License activated for:", email);
     } catch (err) {
       showLicenseError(err);
@@ -227,4 +322,16 @@ function showLicenseModal() {
 
 function hideLicenseModal() {
   licenseModal.classList.add("hidden");
+}
+
+function updateLicenseStatus(isLicensed, useCount, maxFree) {
+  const statusEl = document.getElementById("license-status");
+  if (isLicensed) {
+    statusEl.textContent = "Pro License Active";
+    statusEl.className = "license-status pro";
+  } else {
+    const remaining = Math.max(0, maxFree - useCount);
+    statusEl.textContent = `${remaining} free uses remaining`;
+    statusEl.className = "license-status trial";
+  }
 }
