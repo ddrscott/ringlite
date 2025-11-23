@@ -106,6 +106,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Setup temperature slider
   setupTempControl();
 
+  // Setup help and quit buttons
+  setupHelpButtons();
+
   // Setup licensing
   await setupLicensing();
 });
@@ -302,6 +305,18 @@ function updateColorTemp(percent) {
   const color = `rgb(${r}, ${g}, ${b})`;
   document.documentElement.style.setProperty("--ring-color", color);
   document.documentElement.style.setProperty("--ring-glow", `rgba(${r}, ${g}, ${b}, 0.6)`);
+}
+
+// Help and quit buttons
+function setupHelpButtons() {
+  document.getElementById("help-close").addEventListener("click", () => {
+    help.classList.add("hidden");
+    helpHint.classList.remove("hidden");
+  });
+
+  document.getElementById("quit-btn").addEventListener("click", () => {
+    exit(0);
+  });
 }
 
 // Keyboard controls

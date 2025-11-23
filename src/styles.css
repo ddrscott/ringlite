@@ -94,6 +94,48 @@ html, body {
   cursor: grab;
 }
 
+#help-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.btn-icon:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-quit {
+  margin-top: 12px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-quit:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
 #help.hidden {
   opacity: 0;
   pointer-events: none;
