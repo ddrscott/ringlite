@@ -22,6 +22,15 @@ export default function Home() {
           Download Free (macOS)
         </a>
         <p className="text-gray-600 text-sm mt-2">10 free uses, then $7 for unlimited</p>
+
+        <figure className="mt-12 max-w-2xl mx-auto">
+          <img
+            src="/screenshot.jpg"
+            alt="RingLite in action during a video call"
+            className="rounded-xl shadow-2xl"
+          />
+          <figcaption className="text-gray-500 text-sm mt-3">RingLite in the wild</figcaption>
+        </figure>
       </section>
 
       {/* Features */}
