@@ -52,9 +52,19 @@ function saveDim(value) {
   localStorage.setItem('dimOpacity', value.toString());
 }
 
+function loadSavedTemp() {
+  const saved = localStorage.getItem('colorTemp');
+  return saved ? parseInt(saved, 10) : 0;
+}
+
+function saveTemp(value) {
+  localStorage.setItem('colorTemp', value.toString());
+}
+
 // DOM elements
 let ring;
 let help;
+let helpHint;
 let appWindow;
 let licenseModal;
 
@@ -62,6 +72,7 @@ let licenseModal;
 window.addEventListener("DOMContentLoaded", async () => {
   ring = document.getElementById("ring");
   help = document.getElementById("help");
+  helpHint = document.getElementById("help-hint");
   licenseModal = document.getElementById("license-modal");
   appWindow = getCurrentWindow();
 
@@ -92,6 +103,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Setup background dim slider
   setupDimControl();
 
+  // Setup temperature slider
+  setupTempControl();
+
   // Setup licensing
   await setupLicensing();
 });
@@ -104,6 +118,22 @@ function updateRingSize() {
 function updateRingPosition() {
   // Simple 2D transform - avoid 3D transforms which can cause compositor artifacts on transparent windows
   ring.style.transform = `translate(${ringX - ringSize/2}px, ${ringY - ringSize/2}px)`;
+  updateHintPosition();
+  updateHelpPosition();
+}
+
+function updateHintPosition() {
+  if (!helpHint) return;
+  // Position at 6 o'clock (bottom center of ring, inside the ring)
+  const hintX = ringX;
+  const hintY = ringY + ringSize/2 - ringThickness/2 - 24;
+  helpHint.style.transform = `translate(${hintX}px, ${hintY}px) translateX(-50%)`;
+}
+
+function updateHelpPosition() {
+  if (!help) return;
+  // Center help menu on ring position
+  help.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
 }
 
 // Click-through: ignore clicks on transparent areas, capture on ring
@@ -230,6 +260,44 @@ function updateDimOpacity(percent) {
   document.documentElement.style.setProperty("--dim-opacity", percent / 100);
 }
 
+// Temperature control (cool white to warm yellow)
+function setupTempControl() {
+  const slider = document.getElementById("temp-slider");
+  const valueDisplay = document.getElementById("temp-value");
+
+  // Load saved value
+  const savedTemp = loadSavedTemp();
+  slider.value = savedTemp;
+  updateColorTemp(savedTemp);
+  valueDisplay.textContent = getTempLabel(savedTemp);
+
+  // Handle slider changes
+  slider.addEventListener("input", (e) => {
+    const value = parseInt(e.target.value, 10);
+    updateColorTemp(value);
+    valueDisplay.textContent = getTempLabel(value);
+    saveTemp(value);
+  });
+}
+
+function getTempLabel(value) {
+  if (value < 33) return "Cool";
+  if (value < 66) return "Neutral";
+  return "Warm";
+}
+
+function updateColorTemp(percent) {
+  // 0 = cool white (slight blue), 100 = warm yellow
+  // Interpolate from white to warm yellow
+  const r = 255;
+  const g = Math.round(255 - (percent * 0.15)); // slight decrease
+  const b = Math.round(255 - (percent * 1.5));  // more decrease for warmth
+
+  const color = `rgb(${r}, ${g}, ${b})`;
+  document.documentElement.style.setProperty("--ring-color", color);
+  document.documentElement.style.setProperty("--ring-glow", `rgba(${r}, ${g}, ${b}, 0.6)`);
+}
+
 // Keyboard controls
 function setupKeyboard() {
   window.addEventListener("keydown", (e) => {
@@ -251,6 +319,8 @@ function setupKeyboard() {
       case "h":
       case "H":
         help.classList.toggle("hidden");
+        // Show hint when help is hidden, hide hint when help is shown
+        helpHint.classList.toggle("hidden", !help.classList.contains("hidden"));
         break;
 
       case "l":

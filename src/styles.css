@@ -29,27 +29,59 @@ html, body {
   width: var(--ring-size, 400px);
   height: var(--ring-size, 400px);
   border-radius: 50%;
-  border: var(--ring-thickness, 40px) solid white;
+  border: var(--ring-thickness, 40px) solid var(--ring-color, white);
   box-sizing: border-box;
   cursor: grab;
   box-shadow:
-    0 0 20px rgba(255, 255, 255, 0.6),
-    0 0 40px rgba(255, 255, 255, 0.4),
-    0 0 60px rgba(255, 255, 255, 0.2),
-    inset 0 0 20px rgba(255, 255, 255, 0.6),
-    inset 0 0 40px rgba(255, 255, 255, 0.4);
+    0 0 20px var(--ring-glow, rgba(255, 255, 255, 0.6)),
+    0 0 40px var(--ring-glow, rgba(255, 255, 255, 0.4)),
+    0 0 60px var(--ring-glow, rgba(255, 255, 255, 0.2)),
+    inset 0 0 20px var(--ring-glow, rgba(255, 255, 255, 0.6)),
+    inset 0 0 40px var(--ring-glow, rgba(255, 255, 255, 0.4));
 }
 
 #ring:active {
   cursor: grabbing;
 }
 
+#help-hint {
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: black;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+#help-hint small {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+#help-hint.hidden {
+  opacity: 0;
+}
+
 /* Help overlay */
 #help {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: absolute;
+  left: 0;
+  top: 0;
   background: rgba(0, 0, 0, 0.85);
   color: white;
   padding: 15px 20px;
@@ -107,7 +139,8 @@ html, body {
   text-align: center;
 }
 
-.dim-control {
+.dim-control,
+.temp-control {
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.3);
@@ -116,12 +149,20 @@ html, body {
   gap: 10px;
 }
 
-.dim-control label {
+.temp-control {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: none;
+}
+
+.dim-control label,
+.temp-control label {
   font-size: 12px;
   white-space: nowrap;
 }
 
-.dim-control input[type="range"] {
+.dim-control input[type="range"],
+.temp-control input[type="range"] {
   flex: 1;
   height: 4px;
   -webkit-appearance: none;
@@ -131,7 +172,8 @@ html, body {
   cursor: pointer;
 }
 
-.dim-control input[type="range"]::-webkit-slider-thumb {
+.dim-control input[type="range"]::-webkit-slider-thumb,
+.temp-control input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 14px;
@@ -141,7 +183,8 @@ html, body {
   cursor: pointer;
 }
 
-.dim-control #dim-value {
+.dim-control #dim-value,
+.temp-control #temp-value {
   font-size: 12px;
   min-width: 30px;
   text-align: right;
