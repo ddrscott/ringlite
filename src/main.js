@@ -3,11 +3,15 @@ const { exit } = window.__TAURI__.process;
 const { invoke } = window.__TAURI__.core;
 
 // Ring state
-const DEFAULT_SIZE = 400;
 const MIN_SIZE = 100;
 const MAX_SIZE = 1600;
 const SIZE_STEP = 20;
 const NUDGE_STEP = 10;
+
+// Default size fills vertical screen space with some padding
+function getDefaultSize() {
+  return Math.min(window.screen.height - 100, MAX_SIZE);
+}
 
 let ringSize = loadSavedSize();
 let ringThickness = ringSize * 0.1;
@@ -22,7 +26,7 @@ function loadSavedSize() {
       return size;
     }
   }
-  return DEFAULT_SIZE;
+  return getDefaultSize();
 }
 
 function loadSavedPosition() {
@@ -66,6 +70,7 @@ let ring;
 let brand;
 let sliderLeft;
 let sliderRight;
+let resizeHandle;
 let bottomControls;
 let help;
 let appWindow;
@@ -77,6 +82,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   brand = document.getElementById("brand");
   sliderLeft = document.getElementById("slider-left");
   sliderRight = document.getElementById("slider-right");
+  resizeHandle = document.getElementById("resize-handle");
   bottomControls = document.getElementById("bottom-controls");
   help = document.getElementById("help");
   licenseModal = document.getElementById("license-modal");
@@ -103,8 +109,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   // Setup keyboard controls
   setupKeyboard();
 
-  // Setup scroll to resize
-  setupScroll();
+  // Setup resize handle drag
+  setupResizeHandle();
 
   // Setup background dim slider
   setupDimControl();
@@ -130,6 +136,7 @@ function updateRingPosition() {
   ring.style.transform = `translate(${ringX - ringSize/2}px, ${ringY - ringSize/2}px)`;
   updateBrandPosition();
   updateSliderPositions();
+  updateResizeHandlePosition();
   updateBottomControlsPosition();
   updateHelpPosition();
 }
@@ -156,6 +163,15 @@ function updateSliderPositions() {
     const rightY = ringY;
     sliderRight.style.transform = `translate(${rightX}px, ${rightY}px) translate(-50%, -50%)`;
   }
+}
+
+function updateResizeHandlePosition() {
+  if (!resizeHandle) return;
+  const angle = (45 * Math.PI) / 180;
+  const radius = ringSize / 2 - ringThickness / 2;
+  const handleX = ringX + radius * Math.sin(angle);
+  const handleY = ringY + radius * Math.cos(angle);
+  resizeHandle.style.transform = `translate(${handleX}px, ${handleY}px) translate(-50%, -50%)`;
 }
 
 function updateBottomControlsPosition() {
@@ -188,7 +204,7 @@ async function setupClickThrough() {
 
       // Check UI elements at cursor position
       const elemAtPoint = document.elementFromPoint(x, y);
-      const isOverUI = elemAtPoint && (elemAtPoint.closest('.ring-slider') || elemAtPoint.closest('#bottom-controls') || elemAtPoint.closest('#help') || elemAtPoint.closest('#license-modal'));
+      const isOverUI = elemAtPoint && (elemAtPoint.closest('.ring-slider') || elemAtPoint.closest('#resize-handle') || elemAtPoint.closest('#bottom-controls') || elemAtPoint.closest('#help') || elemAtPoint.closest('#license-modal'));
 
       const shouldCapture = isOverRing || isOverUI;
 
@@ -270,13 +286,46 @@ function setupDrag() {
   });
 }
 
-// Scroll to resize
-function setupScroll() {
-  window.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -SIZE_STEP : SIZE_STEP;
-    resize(delta);
-  }, { passive: false });
+// Resize handle drag
+function setupResizeHandle() {
+  let isResizing = false;
+  let startMouseX, startMouseY;
+  let startSize;
+
+  resizeHandle.addEventListener("mousedown", (e) => {
+    if (e.button === 0) {
+      e.stopPropagation(); // Prevent ring drag
+      isResizing = true;
+      startMouseX = e.clientX;
+      startMouseY = e.clientY;
+      startSize = ringSize;
+      document.body.style.cursor = "nwse-resize";
+    }
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (isResizing) {
+      // Calculate resize based on diagonal movement from center
+      // Moving away from center = larger, toward center = smaller
+      const dx = e.clientX - startMouseX;
+      const dy = e.clientY - startMouseY;
+      // Use the diagonal distance (both dx and dy contribute)
+      const delta = (dx + dy) / 2;
+      const newSize = Math.max(MIN_SIZE, Math.min(MAX_SIZE, startSize + delta * 2));
+      ringSize = newSize;
+      ringThickness = Math.max(10, Math.min(100, ringSize * 0.1));
+      updateRingSize();
+      updateRingPosition();
+    }
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (isResizing) {
+      isResizing = false;
+      document.body.style.cursor = "";
+      saveSize();
+    }
+  });
 }
 
 // Background dim control

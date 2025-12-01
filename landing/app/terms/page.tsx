@@ -53,6 +53,16 @@ export default function Terms() {
           </div>
 
           <div>
+            <h2 className="text-xl font-semibold mb-3 text-white">Results May Vary</h2>
+            <p>
+              The before/after images shown on this website are for illustrative purposes only.
+              Actual results depend on your environment, camera, display brightness, and other factors.
+              RingLite enhances lighting by displaying a bright ring on your screen—individual
+              results will vary based on your specific setup.
+            </p>
+          </div>
+
+          <div>
             <h2 className="text-xl font-semibold mb-3 text-white">Contact</h2>
             <p>
               Questions? Email us at <a href="mailto:support@ringlite.app" className="text-yellow-400 hover:text-yellow-300">support@ringlite.app</a>

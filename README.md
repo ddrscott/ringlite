@@ -16,7 +16,7 @@ A virtual ring light for video recording. Invisible to screen recorders.
 | Action | Control |
 |--------|---------|
 | Move | Drag |
-| Resize | Scroll or `+`/`-` |
+| Resize | Drag handle |
 | Nudge | Arrow keys |
 | Help | `H` |
 | Quit | `Esc` |

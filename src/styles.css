@@ -101,6 +101,39 @@ html, body {
   margin-left: -5px;
 }
 
+/* Resize handle at 4:30 o'clock */
+#resize-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 2px solid rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  cursor: nwse-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: border-color 0.15s ease;
+}
+
+#resize-handle:hover {
+  border-color: rgba(0, 0, 0, 0.8);
+}
+
+#resize-handle:active {
+  border-color: rgba(0, 0, 0, 1);
+}
+
+#resize-handle svg {
+  color: rgba(0, 0, 0, 0.6);
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
 /* Bottom controls at 6 o'clock */
 #bottom-controls {
   position: absolute;
@@ -113,9 +146,9 @@ html, body {
 }
 
 .control-btn {
-  background: rgba(60, 60, 60, 0.9);
-  border: none;
-  color: rgba(255, 255, 255, 0.8);
+  background: transparent;
+  border: 2px solid rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.6);
   font-size: 12px;
   width: 24px;
   height: 24px;
@@ -128,13 +161,13 @@ html, body {
 }
 
 .control-btn:hover {
-  background: rgba(80, 80, 80, 0.95);
-  color: #fff;
+  border-color: rgba(0, 0, 0, 0.8);
+  color: rgba(0, 0, 0, 0.8);
 }
 
 #quit-btn:hover {
-  background: rgba(239, 68, 68, 0.9);
-  color: #fff;
+  border-color: rgba(239, 68, 68, 0.9);
+  color: rgba(239, 68, 68, 0.9);
 }
 
 /* Help tooltip - minimal */

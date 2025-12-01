@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import nodemailer from 'nodemailer'
-import { generateLicenseKey } from '@/lib/license'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -15,35 +11,21 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-export async function POST(req: NextRequest) {
-  const body = await req.text()
-  const signature = req.headers.get('stripe-signature')!
+export async function GET(req: NextRequest) {
+  const email = req.nextUrl.searchParams.get('email')
 
-  let event: Stripe.Event
-
-  try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    )
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err)
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+  if (!email) {
+    return NextResponse.json({ error: 'Missing email parameter' }, { status: 400 })
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session
-    const email = session.customer_details?.email
+  const licenseKey = 'RL-PRO-TEST-A1B2C3D4E5F6G7H8-PREVIEW'
 
-    if (email) {
-      const licenseKey = generateLicenseKey(email)
-
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || 'RingLite <noreply@ringlite.app>',
-        to: email,
-        subject: 'Your RingLite Pro License Key',
-        html: `<!DOCTYPE html>
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || 'RingLite <noreply@ringlite.app>',
+      to: email,
+      subject: 'Your RingLite Pro License Key',
+      html: `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -161,9 +143,11 @@ export async function POST(req: NextRequest) {
   </table>
 </body>
 </html>`,
-      })
-    }
-  }
+    })
 
-  return NextResponse.json({ received: true })
+    return NextResponse.json({ success: true, message: `Test email sent to ${email}` })
+  } catch (error) {
+    console.error('Failed to send test email:', error)
+    return NextResponse.json({ error: 'Failed to send email', details: String(error) }, { status: 500 })
+  }
 }
