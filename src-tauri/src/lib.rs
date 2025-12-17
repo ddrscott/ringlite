@@ -39,12 +39,21 @@ mod macos {
 
 #[cfg(target_os = "windows")]
 mod windows_impl {
-    use windows::Win32::Foundation::HWND;
+    use windows::Win32::Foundation::{HWND, POINT};
     use windows::Win32::UI::WindowsAndMessaging::{SetWindowDisplayAffinity, WDA_EXCLUDEFROMCAPTURE};
+    use windows::Win32::UI::Input::KeyboardAndMouse::GetCursorPos;
 
     pub fn exclude_from_capture(hwnd: isize) {
         unsafe {
             let _ = SetWindowDisplayAffinity(HWND(hwnd as *mut _), WDA_EXCLUDEFROMCAPTURE);
+        }
+    }
+
+    pub fn get_global_mouse_position() -> (f64, f64) {
+        unsafe {
+            let mut point = POINT { x: 0, y: 0 };
+            let _ = GetCursorPos(&mut point);
+            (point.x as f64, point.y as f64)
         }
     }
 }
@@ -55,7 +64,11 @@ fn get_cursor_position() -> (f64, f64) {
     {
         macos::get_global_mouse_position()
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(target_os = "windows")]
+    {
+        windows_impl::get_global_mouse_position()
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     {
         (0.0, 0.0) // TODO: implement for other platforms
     }
