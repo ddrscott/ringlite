@@ -6,6 +6,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 export async function GET() {
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
+    // The Stripe account sells other things too. The webhook only fulfills sessions with this tag.
+    metadata: { product: 'ringlite' },
     payment_method_types: ['card'],
     line_items: [
       {

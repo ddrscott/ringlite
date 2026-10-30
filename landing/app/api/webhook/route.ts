@@ -36,7 +36,8 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session
     const email = session.customer_details?.email
 
-    if (email) {
+    // Every checkout on the Stripe account lands here, not just RingLite's.
+    if (email && session.metadata?.product === 'ringlite') {
       const licenseKey = generateLicenseKey(email)
 
       await transporter.sendMail({
